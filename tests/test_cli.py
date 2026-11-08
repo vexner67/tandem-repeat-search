@@ -21,7 +21,9 @@ def application():
 
 # Проверка поиска в тексте.
 def test_text_search(capsys):
-    code = entry_point.main(["--text", "мама abcabc"])
+    application = entry_point.create_application()
+
+    code = entry_point.main(application, ["--text", "мама abcabc"])
     output = capsys.readouterr()
 
     assert code == 0

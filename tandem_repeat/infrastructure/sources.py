@@ -14,15 +14,6 @@ MAX_BYTES = 5 * 1024 * 1024
 TIMEOUT_SECONDS = 10
 
 
-def _decode_text(data: bytes, encoding: str) -> str:
-    if len(data) > MAX_BYTES:
-        raise SourceError(f"Размер источника превышает {MAX_BYTES} байт.")
-    try:
-        return data.decode(encoding)
-    except (UnicodeError, LookupError) as error:
-        raise SourceError(f"Не удалось декодировать текст: {error}") from error
-
-
 @dataclass(frozen=True)
 class StringSource:
     # Источник текста, введенного пользователем.
@@ -41,12 +32,15 @@ class FileSource:
     encoding: str = "utf-8-sig"
 
     def read(self) -> str:
+        data = self._read_bytes()
+        return _decode_text(data, self.encoding)
+
+    def _read_bytes(self) -> bytes:
         try:
             with self.path.open("rb") as stream:
-                data = stream.read(MAX_BYTES + 1)
+                return stream.read(MAX_BYTES + 1)
         except OSError as error:
             raise SourceError(f"Не удалось прочитать файл: {error}") from error
-        return _decode_text(data, self.encoding)
 
 
 @dataclass(frozen=True)
@@ -56,6 +50,12 @@ class URLSource:
     url: str
 
     def read(self) -> str:
+        data, encoding, media_type = self._download()
+        text = _decode_text(data, encoding)
+        return html_to_text(text) if media_type == "text/html" else text
+
+    def _download(self) -> tuple[bytes, str, str]:
+        # Возвращает байты, кодировку и MIME-тип ответа.
         try:
             request = _create_request(self.url)
             with urlopen(request, timeout=TIMEOUT_SECONDS) as response:
@@ -66,8 +66,16 @@ class URLSource:
                 data = response.read(MAX_BYTES + 1)
         except (OSError, URLError, ValueError) as error:
             raise SourceError(f"Не удалось загрузить URL: {error}") from error
-        text = _decode_text(data, encoding)
-        return html_to_text(text) if media_type == "text/html" else text
+        return data, encoding, media_type
+
+
+def _decode_text(data: bytes, encoding: str) -> str:
+    if len(data) > MAX_BYTES:
+        raise SourceError(f"Размер источника превышает {MAX_BYTES} байт.")
+    try:
+        return data.decode(encoding)
+    except (UnicodeError, LookupError) as error:
+        raise SourceError(f"Не удалось декодировать текст: {error}") from error
 
 
 def _create_request(url: str) -> Request:

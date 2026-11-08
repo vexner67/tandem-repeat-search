@@ -3,7 +3,15 @@
 from html.parser import HTMLParser
 
 
-class _HTMLText(HTMLParser):
+def html_to_text(html: str) -> str:
+    # Извлекает статический текст без выполнения JavaScript и CSS.
+    parser = _HTMLTextParser()
+    parser.feed(html)
+    parser.close()
+    return "".join(parser.parts)
+
+
+class _HTMLTextParser(HTMLParser):
     # Сохраняет слова внутри строчных тегов и разделяет блочные элементы.
 
     _hidden = {"script", "style", "noscript", "template"}
@@ -44,11 +52,3 @@ class _HTMLText(HTMLParser):
     def handle_data(self, data: str) -> None:
         if not self.hidden_tags:
             self.parts.append(data)
-
-
-def html_to_text(html: str) -> str:
-    # Извлекает статический текст без выполнения JavaScript и CSS.
-    parser = _HTMLText()
-    parser.feed(html)
-    parser.close()
-    return "".join(parser.parts)

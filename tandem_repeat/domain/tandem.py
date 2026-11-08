@@ -27,12 +27,14 @@ class RegexTandemMatcher:
 
     def find_tandems(self, text: str) -> list[TandemMatch]:
         # Находит целые слова в порядке появления, сохраняя дубликаты.
-        return [
-            TandemMatch(
-                word=match.group(0),
-                half=match.group("half"),
-                start=match.start(),
-                end=match.end(),
-            )
-            for match in SEARCH_PATTERN.finditer(text)
-        ]
+        matches = SEARCH_PATTERN.finditer(text)
+        return [_to_tandem_match(match) for match in matches]
+
+
+def _to_tandem_match(match: re.Match[str]) -> TandemMatch:
+    return TandemMatch(
+        word=match.group(0),
+        half=match.group("half"),
+        start=match.start(),
+        end=match.end(),
+    )

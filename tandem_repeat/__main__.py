@@ -10,14 +10,19 @@ if not __package__:
 
 from tandem_repeat.application.search import SearchService
 from tandem_repeat.domain.tandem import RegexTandemMatcher
+from tandem_repeat.presentation import Application
 from tandem_repeat.presentation.console import Console
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(application: Application, argv: Sequence[str] | None = None) -> int:
+    return application.run(argv)
+
+
+def create_application() -> Application:
+    # Здесь выбираются конкретные реализации зависимостей.
     service = SearchService(matcher=RegexTandemMatcher())
-    console = Console(service)
-    return console.run(argv)
+    return Console(service)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(create_application()))
