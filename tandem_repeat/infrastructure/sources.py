@@ -7,7 +7,7 @@ from urllib.error import URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
-from tandem_repeat.application.search import SourceError
+from tandem_repeat.application.search import Source, SourceError
 from tandem_repeat.infrastructure.html import html_to_text
 
 MAX_BYTES = 5 * 1024 * 1024
@@ -15,7 +15,7 @@ TIMEOUT_SECONDS = 10
 
 
 @dataclass(frozen=True)
-class StringSource:
+class StringSource(Source):
     # Источник текста, введенного пользователем.
 
     text: str
@@ -25,7 +25,7 @@ class StringSource:
 
 
 @dataclass(frozen=True)
-class FileSource:
+class FileSource(Source):
     # Читает текстовый файл, ограничивая размер до декодирования.
 
     path: Path
@@ -44,7 +44,7 @@ class FileSource:
 
 
 @dataclass(frozen=True)
-class URLSource:
+class URLSource(Source):
     # Загружает текст по HTTP(S) с ограничением размера и тайм-аутом.
 
     url: str

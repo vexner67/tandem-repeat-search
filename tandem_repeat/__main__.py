@@ -3,6 +3,7 @@
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Protocol
 
 if not __package__:
     # При запуске файла Python ищет пакет относительно корня проекта.
@@ -10,8 +11,13 @@ if not __package__:
 
 from tandem_repeat.application.search import SearchService
 from tandem_repeat.domain.tandem import RegexTandemMatcher
-from tandem_repeat.presentation import Application
 from tandem_repeat.presentation.console import Console
+
+
+class Application(Protocol):
+    # Контракт интерфейса, который запускает точка входа.
+
+    def run(self, argv: Sequence[str] | None = None) -> int: ...
 
 
 def main(application: Application, argv: Sequence[str] | None = None) -> int:

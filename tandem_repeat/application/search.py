@@ -1,5 +1,6 @@
 # Контракты и сценарии проверки слова и поиска в тексте.
 
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -11,9 +12,10 @@ class SourceError(Exception):
     pass
 
 
-class TextSource(Protocol):
-    # Контракт источника текста.
+class Source(Protocol):
+    # Общий контракт строки, файла и веб-страницы: получить текст.
 
+    @abstractmethod
     def read(self) -> str:
         # Возвращает текст; при ошибке чтения вызывает SourceError.
         ...
@@ -41,7 +43,7 @@ class SearchService:
         # Передает слово распознавателю, сохраняя пробелы и регистр.
         return self.matcher.is_tandem(word)
 
-    def search(self, source: TextSource) -> list[TandemMatch]:
+    def search(self, source: Source) -> list[TandemMatch]:
         # Читает источник один раз и передает текст распознавателю.
         text = source.read()
         return self.matcher.find_tandems(text)

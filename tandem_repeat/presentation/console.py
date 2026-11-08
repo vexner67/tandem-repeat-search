@@ -4,11 +4,11 @@ import argparse
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Protocol
 
 from tandem_repeat.application.search import (
-    SearchService,
+    Source,
     SourceError,
-    TextSource,
 )
 from tandem_repeat.domain.tandem import TandemMatch
 from tandem_repeat.infrastructure.sources import (
@@ -16,13 +16,20 @@ from tandem_repeat.infrastructure.sources import (
     StringSource,
     URLSource,
 )
-from tandem_repeat.presentation import Application
 
 
-class Console(Application):
+class SearchOperations(Protocol):
+    # Операции, которые пользователь может выполнить через консоль.
+
+    def check(self, word: str) -> bool: ...
+
+    def search(self, source: Source) -> list[TandemMatch]: ...
+
+
+class Console:
     # Консольный интерфейс проверки слова и поиска повторов.
 
-    def __init__(self, service: SearchService) -> None:
+    def __init__(self, service: SearchOperations) -> None:
         self.service = service
 
     def run(self, argv: Sequence[str] | None = None) -> int:
@@ -62,7 +69,7 @@ def _parse_arguments(argv: Sequence[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _select_source(arguments: argparse.Namespace) -> TextSource:
+def _select_source(arguments: argparse.Namespace) -> Source:
     if arguments.file is not None:
         return FileSource(arguments.file, arguments.encoding)
     if arguments.url is not None:
