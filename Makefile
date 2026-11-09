@@ -22,8 +22,7 @@ $(VENV_PYTHON):
 	$(PYTHON) -m venv $(VENV)
 
 install: $(VENV_PYTHON)
-	$(VENV_PYTHON) -m pip install -r requirements.txt \
-		'coverage>=7,<8' 'ruff>=0.9,<1'
+	$(VENV_PYTHON) -m pip install -r requirements.txt
 
 run: $(VENV_PYTHON)
 	$(VENV_PYTHON) -m tandem_repeat $(ARGS)
